@@ -68,6 +68,17 @@
   .st-ativado{background:var(--ativado);color:var(--ativado-ink)}
   .st-nao{background:var(--nao);color:var(--nao-ink)}
 
+  /* ---- moldura de referência (elementos sem número, pra se localizar) ---- */
+  .stage-frame{display:flex;flex-direction:column;width:max-content;margin:0 auto;gap:8px}
+  .band{border-radius:10px;padding:9px 10px;font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;text-align:center;position:relative;overflow:hidden}
+  .band-top{background:repeating-linear-gradient(90deg,#f4d4d4 0 16px,#f9e4e4 16px 32px);color:#9a5a5a;border:1px solid #eab8b8}
+  .band-bottom{background:repeating-linear-gradient(45deg,#f2c6c6 0 12px,#f8dcdc 12px 24px);color:#9a4a4a;border:1px solid #e6a9a9}
+  .band .corner{position:absolute;top:50%;transform:translateY(-50%);background:#111827;color:#fdba74;font-weight:800;padding:3px 9px;border-radius:6px;font-size:10px;letter-spacing:.3px}
+  .band .corner.l{left:8px} .band .corner.r{right:8px}
+  .floor-row{display:flex;align-items:stretch;gap:10px}
+  .edge-right{flex:0 0 auto;align-self:center;background:#38bdf8;color:#04263a;border-radius:10px;padding:16px 9px;font-weight:800;font-size:11px;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1.5px;border:2px solid #0ea5e9;text-align:center}
+  .aisle .door{background:#fff;border:1.5px solid #94a3b8;color:#475569;font-size:9.5px;font-weight:800;padding:1px 7px;border-radius:5px;letter-spacing:.3px}
+
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
   .overlay.open{display:flex}
   .sheet{background:#fff;width:100%;max-width:460px;border-radius:16px 16px 0 0;padding:16px;box-shadow:0 -8px 24px rgba(0,0,0,.2)}
@@ -98,7 +109,7 @@
 
 <div class="orient">
   <span class="ent">⟵ Entrada</span>
-  <span class="mid">Topo · Arquibancada</span>
+  <span class="mid">Topo · Arquibancada · Palco</span>
   <span class="ent">Entrada ⟶</span>
 </div>
 
@@ -124,7 +135,20 @@
 
 <div class="hint">Mapa <b>compartilhado</b>: o que você marcar todo mundo vê. Você está vendo o salão de cima — role para o lado ➡︎ como quem anda pela feira. Corredor central = palco. Cores da barra = status; borda colorida do bloco = zona.</div>
 
-<div class="floor"><div class="floor-inner" id="map"></div></div>
+<div class="floor">
+  <div class="stage-frame">
+    <div class="band band-top">
+      <span class="corner l">⟵ Entrada</span>
+      Arquibancada · Topo do salão
+      <span class="corner r">Entrada ⟶</span>
+    </div>
+    <div class="floor-row">
+      <div class="floor-inner" id="map"></div>
+      <div class="edge-right">🎤 Palco 6×4</div>
+    </div>
+    <div class="band band-bottom">Frente do salão · Palco principal / Arquibancada</div>
+  </div>
+</div>
 
 <div class="overlay" id="overlay">
   <div class="sheet">
@@ -167,9 +191,9 @@ function vOrder(nums){const h=nums.length/2,out=[];for(let i=0;i<h;i++){out.push
 // Colunas na ordem REAL do salão (esquerda -> direita). Cada coluna tem
 // fila de cima (upper) e fila de baixo (lower), como na planta.
 const COLUMNS = [
-  { upper:[{lbl:'01–10',nums:seq(1,10),layout:'v',zona:1}],   lower:[{lbl:'11–20',nums:seq(11,20),layout:'v',zona:1}] },
+  { door:true, upper:[{lbl:'01–10',nums:seq(1,10),layout:'v',zona:1}],   lower:[{lbl:'11–20',nums:seq(11,20),layout:'v',zona:1}] },
   { upper:[{named:'062',zona:1}],                             lower:[{named:'Alquimia',zona:1}] },
-  { upper:[{lbl:'41–50',nums:seq(41,50),layout:'v',zona:1}],  lower:[{lbl:'51–60',nums:seq(51,60),layout:'v',zona:1}] },
+  { door:true, upper:[{lbl:'41–50',nums:seq(41,50),layout:'v',zona:1}],  lower:[{lbl:'51–60',nums:seq(51,60),layout:'v',zona:1}] },
   { upper:[{lbl:'61–70',nums:seq(61,70),layout:'v',zona:2}],  lower:[{lbl:'71–80',nums:seq(71,80),layout:'v',zona:2}] },
   { upper:[{named:'Diamant',zona:2}],                         lower:[{named:'Arkham',zona:2}] },
   { center:true,
@@ -177,9 +201,9 @@ const COLUMNS = [
     lower:[{lbl:'101–110',nums:seq(101,110),layout:'h',cols:5,zona:3},{lbl:'111–120',nums:seq(111,120),layout:'h',cols:5,zona:3}] },
   { upper:[{named:'Allegory',zona:3}],                        lower:[{named:'Sanctum',zona:3}] },
   { upper:[{lbl:'121–130',nums:seq(121,130),layout:'v',zona:3}], lower:[{lbl:'131–140',nums:seq(131,140),layout:'v',zona:3}] },
-  { upper:[{lbl:'141–150',nums:seq(141,150),layout:'v',zona:4}], lower:[{lbl:'151–160',nums:seq(151,160),layout:'v',zona:4}] },
+  { door:true, upper:[{lbl:'141–150',nums:seq(141,150),layout:'v',zona:4}], lower:[{lbl:'151–160',nums:seq(151,160),layout:'v',zona:4}] },
   { upper:[{lbl:'161–170',nums:seq(161,170),layout:'v',zona:4}], lower:[{lbl:'171–180',nums:seq(171,180),layout:'v',zona:4}] },
-  { upper:[{lbl:'181–190',nums:seq(181,190),layout:'v',zona:4}], lower:[{lbl:'191–200',nums:seq(191,200),layout:'v',zona:4}] },
+  { door:true, upper:[{lbl:'181–190',nums:seq(181,190),layout:'v',zona:4}], lower:[{lbl:'191–200',nums:seq(191,200),layout:'v',zona:4}] },
 ];
 
 // ---- estado compartilhado (vem do servidor) ----
@@ -281,6 +305,7 @@ function render(){
     col.upper.forEach(b=>up.appendChild(renderBlock(b)));
     const aisle=document.createElement('div'); aisle.className='aisle';
     if(col.center) aisle.innerHTML='<span class="palco">▣ PALCO</span>';
+    else if(col.door) aisle.innerHTML='<span class="door">✕ passagem</span>';
     const lo=document.createElement('div'); lo.className='col-lower';
     col.lower.forEach(b=>lo.appendChild(renderBlock(b)));
     c.appendChild(up); c.appendChild(aisle); c.appendChild(lo);
