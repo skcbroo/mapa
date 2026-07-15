@@ -65,6 +65,9 @@
   .cell.named{min-width:112px;height:230px;font-size:15px;font-weight:800;padding:0 6px;text-align:center;line-height:1.1;letter-spacing:.5px}
   .cell.dim{opacity:.2}
   .cell .note-dot{position:absolute;top:2px;right:3px;width:5px;height:5px;border-radius:50%;background:#111827}
+  .cell.ours{background:#111827;color:#fff;border-color:#111827;box-shadow:0 0 0 2px #f59e0b inset;padding-bottom:8px}
+  .cell.ours .own{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:7px;font-weight:800;letter-spacing:1px;color:#fbbf24}
+  .cell.ours .note-dot{background:#fbbf24}
   .st-pendente{background:var(--pendente);color:var(--pendente-ink)}
   .st-plantado{background:var(--plantado);color:var(--plantado-ink)}
   .st-quente{background:var(--quente);color:var(--quente-ink)}
@@ -187,6 +190,8 @@ const STATUSES = [
   {key:'ativado',    label:'Ativado ✅'},
   {key:'nao',        label:'Sem interesse'},
 ];
+// estandes que são NOSSOS (Tattu) — marcação fixa, aparece pra todo mundo
+const OURS = {'44':'TATTU','49':'TATTU'};
 function seq(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r;}
 function pad(n){return String(n).padStart(2,'0');}
 function vOrder(nums){const h=nums.length/2,out=[];for(let i=0;i<h;i++){out.push(nums[i]);out.push(nums[i+h]);}return out;}
@@ -280,9 +285,11 @@ function renderBlock(b){
   else { ids=b.nums.map(pad); g.style.gridTemplateColumns='repeat('+(b.cols||5)+',1fr)'; }
   ids.forEach(id=>{
     const bs=boothState(id);
+    const own=OURS[id];
     const cell=document.createElement('div');
-    cell.className='cell st-'+bs.status+(b.named?' named':'');
+    cell.className='cell st-'+bs.status+(b.named?' named':'')+(own?' ours':'');
     cell.textContent=id;
+    if(own) cell.innerHTML+='<span class="own">'+own+'</span>';
     if(bs.nota) cell.innerHTML+='<span class="note-dot"></span>';
     let hide=false;
     const ez=String(bs.zona||zona);
@@ -338,7 +345,7 @@ let currentId=null;
 let modalOpen=false;
 function openModal(id){
   currentId=id; modalOpen=true; const bs=boothState(id);
-  document.getElementById('mTitle').textContent='Estande '+id;
+  document.getElementById('mTitle').textContent='Estande '+id+(OURS[id]?' — '+OURS[id]+' (nosso)':'');
   document.getElementById('mSub').textContent='Zona '+bs.zona+(bs.updatedAt?(' · atualizado '+new Date(bs.updatedAt).toLocaleString('pt-BR')):'');
   const sc=document.getElementById('mStatus'); sc.innerHTML='';
   STATUSES.forEach(s=>{
