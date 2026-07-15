@@ -1,0 +1,13 @@
+{
+  "name": "mapa-estandes",
+  "version": "1.0.0",
+  "description": "Mapa colaborativo de estandes — Tattoo Week Brasília",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

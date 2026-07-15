@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa Estandes — Tattoo Week Brasília</title>
+<style>
+  :root{
+    --bg:#f5f5f7; --card:#fff; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --pendente:#e5e7eb; --pendente-ink:#4b5563;
+    --plantado:#bfdbfe; --plantado-ink:#1e3a8a;
+    --quente:#fdba74; --quente-ink:#7c2d12;
+    --cadastrado:#fde68a; --cadastrado-ink:#78350f;
+    --ativado:#6ee7b7; --ativado-ink:#065f46;
+    --nao:#fca5a5; --nao-ink:#7f1d1d;
+    --z1:#6366f1; --z2:#0ea5e9; --z3:#14b8a6; --z4:#a855f7;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:80px}
+  header{position:sticky;top:0;z-index:20;background:#111827;color:#fff;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  .htop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .htop h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px}
+  .hright{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .meta-badge{font-size:12px;background:#065f46;color:#d1fae5;padding:3px 8px;border-radius:999px;font-weight:700;white-space:nowrap}
+  .sync{font-size:11px;padding:3px 8px;border-radius:999px;font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:4px}
+  .sync .sdot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .sync.ok{background:#064e3b;color:#a7f3d0}       .sync.ok .sdot{background:#34d399}
+  .sync.off{background:#7f1d1d;color:#fecaca}       .sync.off .sdot{background:#f87171}
+  .sync.sync-ing{background:#1e3a8a;color:#bfdbfe}  .sync.sync-ing .sdot{background:#60a5fa;animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .progress{height:6px;background:#374151;border-radius:999px;margin-top:8px;overflow:hidden}
+  .progress > i{display:block;height:100%;background:#34d399;width:0%}
+  .stats{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;background:#1f2937}
+  .stat{flex:0 0 auto;font-size:11px;color:#e5e7eb;background:#374151;border-radius:8px;padding:4px 8px;display:flex;gap:5px;align-items:center;white-space:nowrap}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .toolbar{display:flex;gap:6px;flex-wrap:wrap;padding:10px 12px;background:var(--bg)}
+  select,input,button{font-family:inherit;font-size:13px;border-radius:8px;border:1px solid var(--line);padding:8px 10px;background:#fff;color:var(--ink)}
+  button{cursor:pointer}
+  .btn-ghost{background:#fff}
+  .btn-dark{background:#111827;color:#fff;border-color:#111827}
+
+  /* ---- piso (visto de cima) ---- */
+  .orient{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 12px;background:#111827;color:#9ca3af;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase}
+  .orient .mid{color:#e5e7eb;font-weight:800}
+  .orient .ent{color:#fdba74;font-weight:800}
+  .hint{font-size:11px;color:var(--muted);padding:6px 12px 0}
+  .floor{overflow-x:auto;padding:14px 12px;-webkit-overflow-scrolling:touch}
+  .floor-inner{display:flex;gap:14px;width:max-content;margin:0 auto;align-items:stretch}
+  .col{display:flex;flex-direction:column}
+  .col-upper{display:flex;flex-direction:column;gap:10px;justify-content:flex-end;min-height:236px}
+  .col-lower{display:flex;flex-direction:column;gap:10px;justify-content:flex-start;min-height:236px}
+  .aisle{height:30px;margin:8px 0;border-top:2px dashed #cbd5e1;border-bottom:2px dashed #cbd5e1;display:flex;align-items:center;justify-content:center}
+  .palco{font-size:10px;font-weight:800;color:#4b5563;letter-spacing:1px;background:#e5e7eb;padding:2px 10px;border-radius:6px}
+  .block{background:var(--card);border:1px solid var(--line);border-left-width:4px;border-radius:12px;padding:8px}
+  .block.z1{border-left-color:var(--z1)} .block.z2{border-left-color:var(--z2)}
+  .block.z3{border-left-color:var(--z3)} .block.z4{border-left-color:var(--z4)}
+  .block .lbl{font-size:10px;color:var(--muted);margin:0 0 6px 2px;font-weight:700;display:flex;justify-content:space-between;gap:6px}
+  .ztag{color:#9ca3af}
+  .grid{display:grid;gap:4px}
+  .cell{min-width:42px;height:40px;border-radius:7px;border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;user-select:none;cursor:pointer;position:relative}
+  .cell.named{min-width:96px;height:44px;font-size:11px;padding:0 4px;text-align:center;line-height:1.05}
+  .cell.dim{opacity:.2}
+  .cell .note-dot{position:absolute;top:2px;right:3px;width:5px;height:5px;border-radius:50%;background:#111827}
+  .st-pendente{background:var(--pendente);color:var(--pendente-ink)}
+  .st-plantado{background:var(--plantado);color:var(--plantado-ink)}
+  .st-quente{background:var(--quente);color:var(--quente-ink)}
+  .st-cadastrado{background:var(--cadastrado);color:var(--cadastrado-ink)}
+  .st-ativado{background:var(--ativado);color:var(--ativado-ink)}
+  .st-nao{background:var(--nao);color:var(--nao-ink)}
+
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .overlay.open{display:flex}
+  .sheet{background:#fff;width:100%;max-width:460px;border-radius:16px 16px 0 0;padding:16px;box-shadow:0 -8px 24px rgba(0,0,0,.2)}
+  .sheet h3{margin:0 0 2px}
+  .sheet .sub{color:var(--muted);font-size:12px;margin:0 0 12px}
+  .statusbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .statusbtns button{padding:12px 8px;font-weight:700;border:2px solid transparent;text-align:left}
+  .statusbtns button.sel{outline:3px solid #111827;outline-offset:1px}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .field input,.field textarea,.field select{width:100%}
+  .sheet-actions{display:flex;gap:8px;margin-top:6px}
+  .sheet-actions button{flex:1;padding:12px}
+  button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #2563eb;outline-offset:2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🗺️ Mapa Estandes — Tattoo Week</h1>
+    <div class="hright">
+      <span class="sync sync-ing" id="sync"><span class="sdot"></span><span id="syncTxt">…</span></span>
+      <span class="meta-badge" id="metaBadge">Ativados 0 / 100</span>
+    </div>
+  </div>
+  <div class="progress"><i id="progressBar"></i></div>
+</header>
+
+<div class="orient">
+  <span class="ent">⟵ Entrada</span>
+  <span class="mid">Topo · Arquibancada</span>
+  <span class="ent">Entrada ⟶</span>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="toolbar">
+  <select id="fZona"><option value="">Todas as zonas</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+  <select id="fStatus">
+    <option value="">Todos os status</option>
+    <option value="pendente">Pendente</option>
+    <option value="plantado">Plantado</option>
+    <option value="quente">Quente</option>
+    <option value="cadastrado">Cadastrado</option>
+    <option value="ativado">Ativado</option>
+    <option value="nao">Sem interesse</option>
+  </select>
+  <input id="fBusca" type="tel" inputmode="numeric" placeholder="nº estande" style="width:90px">
+  <button class="btn-ghost" id="btnEu">👤 Eu</button>
+  <button class="btn-ghost" id="btnExport">⬇︎ Backup</button>
+  <button class="btn-ghost" id="btnImport">⬆︎ Importar</button>
+  <input type="file" id="fileImport" accept="application/json" style="display:none">
+</div>
+
+<div class="hint">Mapa <b>compartilhado</b>: o que você marcar todo mundo vê. Você está vendo o salão de cima — role para o lado ➡︎ como quem anda pela feira. Corredor central = palco. Cores da barra = status; borda colorida do bloco = zona.</div>
+
+<div class="floor"><div class="floor-inner" id="map"></div></div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <h3 id="mTitle">Estande</h3>
+    <p class="sub" id="mSub"></p>
+    <div class="statusbtns" id="mStatus"></div>
+    <div class="field">
+      <label>Zona</label>
+      <select id="mZona"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+    </div>
+    <div class="field">
+      <label>Caçador (quem mapeou)</label>
+      <input id="mCacador" placeholder="teu nome">
+    </div>
+    <div class="field">
+      <label>Anotação (nome do artista, @Insta, obs.)</label>
+      <textarea id="mNota" rows="2" placeholder="ex: João Silva @joaotattoo — realismo, super interessado"></textarea>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-ghost" id="mCancel">Fechar</button>
+      <button class="btn-dark" id="mSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const META_ATIVADOS = 100;
+const STATUSES = [
+  {key:'pendente',   label:'Pendente'},
+  {key:'plantado',   label:'Plantado (pitch feito)'},
+  {key:'quente',     label:'Quente (voltar)'},
+  {key:'cadastrado', label:'Cadastrado'},
+  {key:'ativado',    label:'Ativado ✅'},
+  {key:'nao',        label:'Sem interesse'},
+];
+function seq(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r;}
+function pad(n){return String(n).padStart(2,'0');}
+function vOrder(nums){const h=nums.length/2,out=[];for(let i=0;i<h;i++){out.push(nums[i]);out.push(nums[i+h]);}return out;}
+
+// Colunas na ordem REAL do salão (esquerda -> direita). Cada coluna tem
+// fila de cima (upper) e fila de baixo (lower), como na planta.
+const COLUMNS = [
+  { upper:[{lbl:'01–10',nums:seq(1,10),layout:'v',zona:1}],   lower:[{lbl:'11–20',nums:seq(11,20),layout:'v',zona:1}] },
+  { upper:[{named:'062',zona:1}],                             lower:[{named:'Alquimia',zona:1}] },
+  { upper:[{lbl:'41–50',nums:seq(41,50),layout:'v',zona:1}],  lower:[{lbl:'51–60',nums:seq(51,60),layout:'v',zona:1}] },
+  { upper:[{lbl:'61–70',nums:seq(61,70),layout:'v',zona:2}],  lower:[{lbl:'71–80',nums:seq(71,80),layout:'v',zona:2}] },
+  { upper:[{named:'Diamant',zona:2}],                         lower:[{named:'Arkham',zona:2}] },
+  { center:true,
+    upper:[{lbl:'81–90',nums:seq(81,90),layout:'h',cols:5,zona:2},{lbl:'91–100',nums:seq(91,100),layout:'h',cols:5,zona:2}],
+    lower:[{lbl:'101–110',nums:seq(101,110),layout:'h',cols:5,zona:3},{lbl:'111–120',nums:seq(111,120),layout:'h',cols:5,zona:3}] },
+  { upper:[{named:'Allegory',zona:3}],                        lower:[{named:'Sanctum',zona:3}] },
+  { upper:[{lbl:'121–130',nums:seq(121,130),layout:'v',zona:3}], lower:[{lbl:'131–140',nums:seq(131,140),layout:'v',zona:3}] },
+  { upper:[{lbl:'141–150',nums:seq(141,150),layout:'v',zona:4}], lower:[{lbl:'151–160',nums:seq(151,160),layout:'v',zona:4}] },
+  { upper:[{lbl:'161–170',nums:seq(161,170),layout:'v',zona:4}], lower:[{lbl:'171–180',nums:seq(171,180),layout:'v',zona:4}] },
+  { upper:[{lbl:'181–190',nums:seq(181,190),layout:'v',zona:4}], lower:[{lbl:'191–200',nums:seq(191,200),layout:'v',zona:4}] },
+];
+
+// ---- estado compartilhado (vem do servidor) ----
+let state = { booths:{} };
+let appPassword = localStorage.getItem('appPassword') || '';
+let needsPassword = false;
+
+function authHeaders(){ return appPassword ? {'x-app-password':appPassword} : {}; }
+function boothState(id){ return state.booths[id] || {status:'pendente',zona:defaultZona(id),cacador:'',nota:'',updatedAt:0}; }
+
+const idZona = {};
+COLUMNS.forEach(col=>['upper','lower'].forEach(row=>col[row].forEach(b=>{
+  (b.nums||[]).forEach(n=> idZona[pad(n)]=b.zona);
+  if(b.named) idZona[b.named]=b.zona;
+})));
+function defaultZona(id){ return idZona[id]||1; }
+
+// ---- indicador de sincronização ----
+function setSync(kind,txt){
+  const el=document.getElementById('sync');
+  el.className='sync '+kind;
+  document.getElementById('syncTxt').textContent=txt;
+}
+
+async function fetchState(){
+  try{
+    const r=await fetch('/api/booths',{headers:authHeaders()});
+    if(!r.ok) throw new Error('http '+r.status);
+    const data=await r.json();
+    state = data && data.booths ? data : {booths:{}};
+    setSync('ok','online');
+    return true;
+  }catch(e){
+    setSync('off','offline');
+    return false;
+  }
+}
+
+async function saveBooth(id,booth){
+  setSync('sync-ing','salvando…');
+  try{
+    const r=await fetch('/api/booths/'+encodeURIComponent(id),{
+      method:'PUT',
+      headers:{'Content-Type':'application/json',...authHeaders()},
+      body:JSON.stringify(booth)
+    });
+    if(r.status===401){ askPassword(); throw new Error('senha'); }
+    if(!r.ok) throw new Error('http '+r.status);
+    const out=await r.json();
+    state.booths[id]=out.booth;         // aplica a versão que o servidor gravou
+    setSync('ok','online');
+    return true;
+  }catch(e){
+    setSync('off','offline — não salvou');
+    return false;
+  }
+}
+
+const mapEl = document.getElementById('map');
+let F = {zona:'',status:'',busca:''};
+
+function renderBlock(b){
+  const zona=b.zona||1;
+  const bd=document.createElement('div'); bd.className='block z'+zona;
+  let ids=[];
+  if(b.named){ ids=[b.named]; }
+  else { bd.innerHTML=`<div class="lbl"><span>${b.lbl}</span><span class="ztag">Z${zona}</span></div>`; }
+  const g=document.createElement('div'); g.className='grid';
+  if(b.named){ g.style.gridTemplateColumns='1fr'; }
+  else if(b.layout==='v'){ ids=vOrder(b.nums).map(pad); g.style.gridTemplateColumns='repeat(2,1fr)'; }
+  else { ids=b.nums.map(pad); g.style.gridTemplateColumns='repeat('+(b.cols||5)+',1fr)'; }
+  ids.forEach(id=>{
+    const bs=boothState(id);
+    const cell=document.createElement('div');
+    cell.className='cell st-'+bs.status+(b.named?' named':'');
+    cell.textContent=id;
+    if(bs.nota) cell.innerHTML+='<span class="note-dot"></span>';
+    let hide=false;
+    const ez=String(bs.zona||zona);
+    if(F.zona && ez!==F.zona) hide=true;
+    if(F.status && bs.status!==F.status) hide=true;
+    if(F.busca && !id.includes(F.busca)) hide=true;
+    if(hide) cell.classList.add('dim');
+    cell.onclick=()=>openModal(id);
+    g.appendChild(cell);
+  });
+  bd.appendChild(g);
+  return bd;
+}
+
+function render(){
+  F.zona=document.getElementById('fZona').value;
+  F.status=document.getElementById('fStatus').value;
+  F.busca=document.getElementById('fBusca').value.trim();
+  mapEl.innerHTML='';
+  COLUMNS.forEach(col=>{
+    const c=document.createElement('div'); c.className='col';
+    const up=document.createElement('div'); up.className='col-upper';
+    col.upper.forEach(b=>up.appendChild(renderBlock(b)));
+    const aisle=document.createElement('div'); aisle.className='aisle';
+    if(col.center) aisle.innerHTML='<span class="palco">▣ PALCO</span>';
+    const lo=document.createElement('div'); lo.className='col-lower';
+    col.lower.forEach(b=>lo.appendChild(renderBlock(b)));
+    c.appendChild(up); c.appendChild(aisle); c.appendChild(lo);
+    mapEl.appendChild(c);
+  });
+  renderStats();
+}
+
+function renderStats(){
+  const counts={}; STATUSES.forEach(s=>counts[s.key]=0); let total=0;
+  Object.keys(idZona).forEach(id=>{ counts[boothState(id).status]++; total++; });
+  const cvar=k=>getComputedStyle(document.documentElement).getPropertyValue('--'+k);
+  const el=document.getElementById('stats'); el.innerHTML='';
+  el.innerHTML+=`<span class="stat"><b>${total}</b> estandes</span>`;
+  STATUSES.forEach(s=>{ el.innerHTML+=`<span class="stat"><span class="dot" style="background:${cvar(s.key)}"></span>${s.label.split(' ')[0]} <b>${counts[s.key]}</b></span>`; });
+  const at=counts['ativado'];
+  document.getElementById('metaBadge').textContent=`Ativados ${at} / ${META_ATIVADOS}`;
+  document.getElementById('progressBar').style.width=Math.min(100,(at/META_ATIVADOS*100))+'%';
+}
+
+let currentId=null;
+let modalOpen=false;
+function openModal(id){
+  currentId=id; modalOpen=true; const bs=boothState(id);
+  document.getElementById('mTitle').textContent='Estande '+id;
+  document.getElementById('mSub').textContent='Zona '+bs.zona+(bs.updatedAt?(' · atualizado '+new Date(bs.updatedAt).toLocaleString('pt-BR')):'');
+  const sc=document.getElementById('mStatus'); sc.innerHTML='';
+  STATUSES.forEach(s=>{
+    const b=document.createElement('button');
+    b.className='st-'+s.key+(bs.status===s.key?' sel':''); b.textContent=s.label; b.dataset.key=s.key;
+    b.onclick=()=>{ sc.querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); };
+    sc.appendChild(b);
+  });
+  document.getElementById('mZona').value=bs.zona;
+  document.getElementById('mCacador').value=bs.cacador||localStorage.getItem('meuNome')||'';
+  document.getElementById('mNota').value=bs.nota||'';
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); currentId=null; modalOpen=false; }
+document.getElementById('mCancel').onclick=closeModal;
+document.getElementById('overlay').onclick=e=>{ if(e.target.id==='overlay') closeModal(); };
+document.getElementById('mSave').onclick=async ()=>{
+  if(!currentId) return;
+  const sel=document.querySelector('#mStatus button.sel');
+  const status=sel?sel.dataset.key:'pendente';
+  const cac=document.getElementById('mCacador').value.trim();
+  if(cac) localStorage.setItem('meuNome',cac);
+  const booth={ status, zona:document.getElementById('mZona').value, cacador:cac, nota:document.getElementById('mNota').value.trim(), updatedAt:Date.now() };
+  const id=currentId;
+  const ok=await saveBooth(id,booth);
+  if(!ok){ alert('Sem conexão — não deu pra salvar. Tenta de novo quando o sinal voltar.'); return; }
+  render(); closeModal();
+};
+
+document.getElementById('fZona').onchange=render;
+document.getElementById('fStatus').onchange=render;
+document.getElementById('fBusca').oninput=render;
+document.getElementById('btnEu').onclick=()=>{ const n=prompt('Teu nome (marca automaticamente o que você mapear):', localStorage.getItem('meuNome')||''); if(n!==null){ localStorage.setItem('meuNome',n.trim()); alert('Salvo: '+(n.trim()||'(vazio)')); } };
+document.getElementById('btnExport').onclick=()=>{ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mapa_estandes_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click(); };
+document.getElementById('btnImport').onclick=()=>document.getElementById('fileImport').click();
+document.getElementById('fileImport').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+  r.onload=async ()=>{ try{
+      const imp=JSON.parse(r.result);
+      setSync('sync-ing','importando…');
+      const resp=await fetch('/api/import',{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify({booths:imp.booths||{}})});
+      if(resp.status===401){ askPassword(); throw new Error('senha'); }
+      if(!resp.ok) throw new Error('http '+resp.status);
+      const out=await resp.json();
+      await fetchState(); render();
+      alert('Importado. '+out.merged+' estandes atualizados (mais recentes venceram).');
+    }catch(err){ setSync('off','erro no import'); alert('Falhou o import: '+err.message); } e.target.value=''; };
+  r.readAsText(f);
+};
+
+// ---- senha (opcional; só aparece se o servidor exigir) ----
+function askPassword(){
+  const p=prompt('Senha da equipe pra editar o mapa:', appPassword||'');
+  if(p!==null){ appPassword=p.trim(); localStorage.setItem('appPassword',appPassword); }
+}
+async function checkConfig(){
+  try{ const r=await fetch('/api/config'); const c=await r.json(); needsPassword=!!c.needsPassword; if(needsPassword && !appPassword) askPassword(); }catch(e){}
+}
+
+// ---- polling: puxa as edições dos outros a cada 7s (pausa com modal aberto) ----
+async function poll(){
+  if(modalOpen) return;
+  const ok=await fetchState();
+  if(ok) render();
+}
+
+(async function init(){
+  await checkConfig();
+  await fetchState();
+  render();
+  setInterval(poll,7000);
+  window.addEventListener('focus',poll);
+})();
+</script>
+</body>
+</html>
