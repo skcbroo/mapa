@@ -46,11 +46,15 @@
   .hint{font-size:11px;color:var(--muted);padding:6px 12px 0}
   .floor{overflow-x:auto;padding:14px 12px;-webkit-overflow-scrolling:touch}
   .floor-inner{display:flex;gap:14px;width:max-content;margin:0 auto;align-items:stretch}
-  .col{display:flex;flex-direction:column}
-  .col-upper{display:flex;flex-direction:column;gap:10px;justify-content:flex-end;min-height:236px}
-  .col-lower{display:flex;flex-direction:column;gap:10px;justify-content:flex-start;min-height:236px}
-  .aisle{height:30px;margin:8px 0;border-top:2px dashed #cbd5e1;border-bottom:2px dashed #cbd5e1;display:flex;align-items:center;justify-content:center}
-  .palco{font-size:10px;font-weight:800;color:#4b5563;letter-spacing:1px;background:#e5e7eb;padding:2px 10px;border-radius:6px}
+  /* colunas com formato de arena: topo em arco, corredor central largo */
+  .col{display:flex;flex-direction:column;align-items:center;height:660px}
+  .col-upper{display:flex;flex-direction:column;gap:10px}
+  .col-mid{flex:1;display:flex;align-items:center;justify-content:center;min-height:34px;width:100%;padding:6px 0}
+  .col-lower{display:flex;flex-direction:column;gap:10px}
+  .passagem{font-size:9.5px;font-weight:800;color:#475569;letter-spacing:.3px;background:#fff;border:1.5px dashed #94a3b8;padding:3px 8px;border-radius:5px;white-space:nowrap}
+  .stage-box{background:#111827;color:#e5e7eb;border:2px solid #374151;border-radius:12px;padding:16px 22px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+  .stage-box b{font-size:14px;letter-spacing:3px;display:block}
+  .stage-box small{font-size:9.5px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase}
   .block{background:var(--card);border:1px solid var(--line);border-left-width:4px;border-radius:12px;padding:8px}
   .block.z1{border-left-color:var(--z1)} .block.z2{border-left-color:var(--z2)}
   .block.z3{border-left-color:var(--z3)} .block.z4{border-left-color:var(--z4)}
@@ -58,7 +62,7 @@
   .ztag{color:#9ca3af}
   .grid{display:grid;gap:4px}
   .cell{min-width:42px;height:40px;border-radius:7px;border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;user-select:none;cursor:pointer;position:relative}
-  .cell.named{min-width:96px;height:44px;font-size:11px;padding:0 4px;text-align:center;line-height:1.05}
+  .cell.named{min-width:112px;height:230px;font-size:15px;font-weight:800;padding:0 6px;text-align:center;line-height:1.1;letter-spacing:.5px}
   .cell.dim{opacity:.2}
   .cell .note-dot{position:absolute;top:2px;right:3px;width:5px;height:5px;border-radius:50%;background:#111827}
   .st-pendente{background:var(--pendente);color:var(--pendente-ink)}
@@ -77,7 +81,6 @@
   .band .corner.l{left:8px} .band .corner.r{right:8px}
   .floor-row{display:flex;align-items:stretch;gap:10px}
   .edge-right{flex:0 0 auto;align-self:center;background:#38bdf8;color:#04263a;border-radius:10px;padding:16px 9px;font-weight:800;font-size:11px;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1.5px;border:2px solid #0ea5e9;text-align:center}
-  .aisle .door{background:#fff;border:1.5px solid #94a3b8;color:#475569;font-size:9.5px;font-weight:800;padding:1px 7px;border-radius:5px;letter-spacing:.3px}
 
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
   .overlay.open{display:flex}
@@ -294,21 +297,26 @@ function renderBlock(b){
   return bd;
 }
 
+// arco de arena: colunas do centro sobem, as das pontas descem (cúpula)
+const CENTER_I=(COLUMNS.length-1)/2, ARC_K=2.7;
+function arcOffset(i){ const d=Math.abs(i-CENTER_I); return Math.round(ARC_K*d*d); }
+
 function render(){
   F.zona=document.getElementById('fZona').value;
   F.status=document.getElementById('fStatus').value;
   F.busca=document.getElementById('fBusca').value.trim();
   mapEl.innerHTML='';
-  COLUMNS.forEach(col=>{
+  COLUMNS.forEach((col,i)=>{
     const c=document.createElement('div'); c.className='col';
     const up=document.createElement('div'); up.className='col-upper';
+    up.style.marginTop=arcOffset(i)+'px';
     col.upper.forEach(b=>up.appendChild(renderBlock(b)));
-    const aisle=document.createElement('div'); aisle.className='aisle';
-    if(col.center) aisle.innerHTML='<span class="palco">▣ PALCO</span>';
-    else if(col.door) aisle.innerHTML='<span class="door">✕ passagem</span>';
+    const mid=document.createElement('div'); mid.className='col-mid';
+    if(col.center) mid.innerHTML='<div class="stage-box"><b>▣ PALCO</b><small>palco principal</small></div>';
+    else if(col.door) mid.innerHTML='<span class="passagem">✕ passagem</span>';
     const lo=document.createElement('div'); lo.className='col-lower';
     col.lower.forEach(b=>lo.appendChild(renderBlock(b)));
-    c.appendChild(up); c.appendChild(aisle); c.appendChild(lo);
+    c.appendChild(up); c.appendChild(mid); c.appendChild(lo);
     mapEl.appendChild(c);
   });
   renderStats();
